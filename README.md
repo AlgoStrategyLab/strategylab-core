@@ -41,8 +41,8 @@ res.save("sma.json")
 
 ## Strategies built on it
 
-| Repo | Strategy |
-| --- | --- |
-| [dual-momentum](https://github.com/AlgoStrategyLab/dual-momentum) | Antonacci's Global Equities Momentum, 1997–2026 |
+| Repo | Strategy | Article |
+| --- | --- | --- |
+| [dual-momentum](https://github.com/AlgoStrategyLab/dual-momentum) | Antonacci's Global Equities Momentum, 1997–2026 | [read](https://algostrategylab.github.io/dual-momentum/) |
 
 MIT licensed. Research and education only, not investment advice.
