@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from .strategy import Strategy
-from .metrics import compute_metrics, yearly_table, drawdown_series
+from .metrics import compute_metrics, extended_metrics, yearly_table, drawdown_series, drawdown_table, monthly_returns_table
 
 
 def rebalance_calendar(index: pd.DatetimeIndex, freq: str = "M") -> pd.DatetimeIndex:
@@ -34,6 +34,10 @@ class BacktestResult:
     config: dict
     metrics: dict
     benchmark_metrics: dict
+    extended: dict
+    benchmark_extended: dict
+    drawdowns: list
+    monthly_returns: pd.DataFrame
     yearly: list
     equity: pd.Series
     benchmark_equity: pd.Series
@@ -45,12 +49,16 @@ class BacktestResult:
 
     def to_json_dict(self, include_series: bool = True) -> dict:
         d = {
-            "schema_version": "1.0",
+            "schema_version": "1.1",
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "strategy": self.strategy,
             "config": self.config,
             "metrics": self.metrics,
             "benchmark_metrics": self.benchmark_metrics,
+            "extended_metrics": self.extended,
+            "benchmark_extended_metrics": self.benchmark_extended,
+            "drawdowns": self.drawdowns,
+            "monthly_returns": {str(y): {c: (None if pd.isna(v) else round(float(v), 4)) for c, v in row.items()} for y, row in self.monthly_returns.iterrows()},
             "yearly": self.yearly,
             "trades": self.trades,
         }
@@ -154,6 +162,16 @@ class Backtest:
         metrics["time_in_market"] = round(float((weights.sum(axis=1) > 0.01).mean()), 4)
         metrics["avg_cost_drag_annual"] = round(float((turn.sum() * self.cost_bps / 1e4) / (n / 252)), 5)
         bmetrics = compute_metrics(bench_daily, bench_daily)
+        ext = extended_metrics(daily, bench_daily)
+        ext["trading"] = {
+            "annual_turnover": metrics["annual_turnover"], "time_in_market": metrics["time_in_market"],
+            "avg_cost_drag_annual": metrics["avg_cost_drag_annual"], "trades": trades,
+            "rebalances": int(len(targets)), "rebalances_with_change": int((turn > 1e-9).sum()),
+            "avg_turnover_per_rebalance": round(float(turn[turn > 1e-9].mean()), 4) if (turn > 1e-9).any() else 0.0,
+            "allocation_share": {c: round(float(v), 4) for c, v in (weights.idxmax(axis=1).where(weights.max(axis=1) > 0.5, "CASH").value_counts(normalize=True)).items()},
+            "avg_holding_period_days": round(float(n / max(int((turn > 1e-9).sum()), 1)), 1),
+        }
+        bext = extended_metrics(bench_daily, bench_daily)
 
         return BacktestResult(
             strategy=self.strategy.describe(),
@@ -163,6 +181,8 @@ class Backtest:
                 "execution": "signal at close, fill next close", "data": "yfinance adjusted close",
             },
             metrics=metrics, benchmark_metrics=bmetrics,
+            extended=ext, benchmark_extended=bext,
+            drawdowns=drawdown_table(equity, top=10), monthly_returns=monthly_returns_table(daily),
             yearly=yearly_table(daily, bench_daily), equity=equity, benchmark_equity=bench_equity,
             drawdown=drawdown_series(equity), weights=weights, daily_returns=daily, turnover=turn, trades=trades,
         )

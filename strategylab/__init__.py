@@ -9,11 +9,11 @@ Design goals
 """
 from .data import load_prices
 from .engine import Backtest, BacktestResult
-from .metrics import compute_metrics, yearly_table, drawdown_series
+from .metrics import compute_metrics, extended_metrics, yearly_table, drawdown_series, drawdown_table, monthly_returns_table
 from .robustness import parameter_sweep, walk_forward, in_vs_out_of_sample
 from .strategy import Strategy
 
 __all__ = [
     "load_prices", "Backtest", "BacktestResult", "compute_metrics", "yearly_table",
-    "drawdown_series", "parameter_sweep", "walk_forward", "in_vs_out_of_sample", "Strategy",
+    "drawdown_series", "extended_metrics", "drawdown_table", "monthly_returns_table", "parameter_sweep", "walk_forward", "in_vs_out_of_sample", "Strategy",
 ]
