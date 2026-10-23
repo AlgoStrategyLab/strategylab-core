@@ -44,5 +44,6 @@ res.save("sma.json")
 | Repo | Strategy | Article |
 | --- | --- | --- |
 | [dual-momentum](https://github.com/AlgoStrategyLab/dual-momentum) | Antonacci's Global Equities Momentum, 1997–2026 | [read](https://algostrategylab.github.io/dual-momentum/) |
+| [sma-trend-filter](https://github.com/AlgoStrategyLab/sma-trend-filter) | Faber's 10-month moving average filter vs absolute momentum, 1987-2026 | [read](https://algostrategylab.github.io/sma-trend-filter/) |
 
 MIT licensed. Research and education only, not investment advice.
